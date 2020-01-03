@@ -95,16 +95,14 @@ def ExpGray(window):
         img_height = img_info[0]
         img_width = img_info[1]
         result = []
-        result = np.arange(img_height*img_width*3).reshape(img_height, img_width, 3)
+        result = np.arange(img_height*img_width*3, dtype='uint8').reshape(img_height, img_width, 3)
         for i in range(img_height):
             for j in range(img_width):
                 for k in range(3):
                     result[i][j][k] = 30.0 * np.log2(img[0][i][j][k]+1)
         imgs.extend([img[0],result])
         imageList.append(imgs)
-    #resizeFromList(window, imageList)
-    window.imageList = []
-    window.imageList.append(imgs)
+    resizeFromList(window, imageList)
     showImage(window,['原图','指数灰度变换'])
 
 #负片
@@ -115,9 +113,7 @@ def ReverseGray(window):
         result = 255-img[0]
         imgs.extend([img[0],result])
         imageList.append(imgs)
-    #resizeFromList(window, imageList)
-    window.imageList = []
-    window.imageList.append(imgs)
+    resizeFromList(window, imageList)
     showImage(window,['原图','负片'])
 
 
@@ -126,50 +122,109 @@ def GammaChange(window):
     imageList = []
     for img in window.originImages:
         imgs = []
+        img_info = img[0].shape
+        img_height = img_info[0]
+        img_width = img_info[1]
         result = []
-        result = np.arange(img_height*img_width*3).reshape(img_height, img_width, 3)
+        result = np.arange(img_height*img_width*3, dtype='uint8').reshape(img_height, img_width, 3)
         for i in range(img_height):
             for j in range(img_width):
                 for k in range(3):
-                    result[i][j][k] = 1.0 * np.power(img[0][i][j][k]/255.0, 1/gamma) * 255.0
+                    result[i][j][k] = 1.0 * np.power(img[0][i][j][k]/255.0, 1/0.6) * 255.0
         imgs.extend([img[0],result])
         imageList.append(imgs)
-    #resizeFromList(window, imageList)
-    window.imageList = []
-    window.imageList.append(imgs)
+    resizeFromList(window, imageList)
     showImage(window,['原图','伽马矫正'])
 
 #滤波按钮相关方法
 #均值滤波
 def AvgFilter(window):
-    window.imageList = []
-    window.imageList.append(imgs)
+    imageList = []
+    for img in window.originImages:
+        imgs = []
+        result = cv2.blur(img[0], (5, 5))
+        imgs.extend([img[0],result])
+        imageList.append(imgs)
+    resizeFromList(window, imageList)
     showImage(window,['原图','均值滤波'])
 
 #中值滤波
 def MedFilter(window):
-    window.imageList = []
-    window.imageList.append(imgs)
+    imageList = []
+    for img in window.originImages:
+        imgs = []
+        result = cv2.medianBlur(img[0],5)
+        imgs.extend([img[0],result])
+        imageList.append(imgs)
+    resizeFromList(window, imageList)
     showImage(window,['原图','中值滤波'])
 
 
 #拉普拉斯锐化按钮方法
 def Laplacian(window):
-    window.imageList = []
-    window.imageList.append(imgs)
+    imageList = []
+    for img in window.originImages:
+        imgs = []
+        img_height, img_width = img[0].shape[:2]
+        laplace = cv2.Laplacian(img[0], cv2.CV_64F, ksize=3)
+        laplace[laplace<0] = 0
+        laplace[laplace>255] = 255
+        result = img[0] - laplace
+        result[result<0] = 0
+        result[result>255] = 255
+        result = cv2.resize(src=result, dsize=(img_height, img_width))
+        print(result)
+        imgs.extend([img[0],result])
+        imageList.append(imgs)
+    resizeFromList(window, imageList)
     showImage(window,['原图','拉普拉斯锐化'])
 
 
 #傅里叶变换按钮方法
 def FourierChange(window):
-    window.imageList = []
-    window.imageList.append(imgs)
+    imageList = []
+    for img in window.originImages:
+        imgs = []
+        b,g,r = cv2.split(img[0])
+        b_freImg,b_recImg = oneChannelDft(b)
+        g_freImg, g_recImg = oneChannelDft(g)
+        r_freImg, r_recImg = oneChannelDft(r)
+        freImg = cv2.merge([b_freImg,g_freImg,r_freImg])
+        imgs.extend([img[0],freImg])
+        imageList.append(imgs)
+    resizeFromList(window, imageList)
     showImage(window,['原图','傅里叶变换'])
+def oneChannelDft(img):
+    width, height = img.shape
+    nwidth = cv2.getOptimalDFTSize(width)
+    nheigth = cv2.getOptimalDFTSize(height)
+    nimg = np.zeros((nwidth, nheigth))
+    nimg[:width, :height] = img
+    dft = cv2.dft(np.float32(nimg), flags = cv2.DFT_COMPLEX_OUTPUT)
+    ndft = dft[:width, :height]
+    ndshift = np.fft.fftshift(ndft)
+    magnitude = np.log(cv2.magnitude(ndshift[:, :, 0], ndshift[:, :, 1]))
+    result = (magnitude - magnitude.min()) / (magnitude.max() - magnitude.min()) * 255
+    frequencyImg = result.astype('uint8')
+    ilmg = cv2.idft(dft)
+    ilmg = cv2.magnitude(ilmg[:, :, 0], ilmg[:, :, 1])[:width, :height]
+    ilmg = np.floor((ilmg - ilmg.min()) / (ilmg.max() - ilmg.min()) * 255)
+    recoveredImg = ilmg.astype('uint8')
+    return frequencyImg,recoveredImg
 
 #直方图均衡化按钮方法
 def HistogramEqualization(window):
-    window.imageList = []
-    window.imageList.append(imgs)
+    imageList = []
+    for img in window.originImages:
+        imgs = []
+        b, g, r = cv2.split(img[0])
+        b_equal = cv2.equalizeHist(b)
+        g_equal = cv2.equalizeHist(g)
+        r_equal = cv2.equalizeHist(r)
+        result = cv2.merge([b_equal, g_equal, r_equal])
+        imgs.extend([img[0],result])
+        imageList.append(imgs)
+    resizeFromList(window, imageList)
     showImage(window,['原图','直方图均衡化'])
 
 #频率域滤波按钮相关方法
@@ -210,62 +265,6 @@ def WienerFiltering(window):
     window.imageList.append(imgs)
     showImage(window,['原图','维纳滤波图像复原'])
 
-
-#变换按钮相关方法
-#傅里叶变换
-def change1Image(window):
-    imageList = []
-    for img in window.originImages:
-        imgs = []
-        b,g,r = cv2.split(img[0])
-        b_freImg,b_recImg = oneChannelDft(b)
-        g_freImg, g_recImg = oneChannelDft(g)
-        r_freImg, r_recImg = oneChannelDft(r)
-        freImg = cv2.merge([b_freImg,g_freImg,r_freImg])
-        imgs.extend([img[0],freImg])
-        imageList.append(imgs)
-    resizeFromList(window, imageList)
-    showImage(window,['原图','傅里叶变换后'])
-def oneChannelDft(img):
-    width, height = img.shape
-    nwidth = cv2.getOptimalDFTSize(width)
-    nheigth = cv2.getOptimalDFTSize(height)
-    nimg = np.zeros((nwidth, nheigth))
-    nimg[:width, :height] = img
-    dft = cv2.dft(np.float32(nimg), flags = cv2.DFT_COMPLEX_OUTPUT)
-    ndft = dft[:width, :height]
-    ndshift = np.fft.fftshift(ndft)
-    magnitude = np.log(cv2.magnitude(ndshift[:, :, 0], ndshift[:, :, 1]))
-    result = (magnitude - magnitude.min()) / (magnitude.max() - magnitude.min()) * 255
-    frequencyImg = result.astype('uint8')
-    ilmg = cv2.idft(dft)
-    ilmg = cv2.magnitude(ilmg[:, :, 0], ilmg[:, :, 1])[:width, :height]
-    ilmg = np.floor((ilmg - ilmg.min()) / (ilmg.max() - ilmg.min()) * 255)
-    recoveredImg = ilmg.astype('uint8')
-    return frequencyImg,recoveredImg
-
-#离散余弦变换
-def change2Image(window):
-    imageList = []
-    for img in window.originImages:
-        imgs = []
-        img1 = cv2.cvtColor(img[0], cv2.COLOR_BGR2RGB)
-        img_dct = cv2.dct(img1)         #进行离散余弦变换
-        imgs.extend([img[0],img_dct])
-        imageList.append(imgs)
-    resizeFromList(window, imageList)
-    showImage(window,['原图','离散余弦变换后'])
-#Radon变换
-def change3Image(window):
-    imageList = []
-    for img in window.originImages:
-        imgs = []
-        img_dct = cv2.dct(img[0])         
-        result = np.log(abs(img_dct)) 
-        imgs.extend([img[0],result])
-        imageList.append(imgs)
-    resizeFromList(window, imageList)
-    showImage(window,['原图','Radon变换后'])
 
 
 #滤波按钮相关方法
@@ -314,25 +313,6 @@ def smoothing4Image(window):
     resizeFromList(window, imageList)
     showImage(window,['原图','锐化滤波后'])
 
-#直方图统计按钮相关方法
-#R直方图
-def hist1Image(window):
-    imageList = []
-    for img in window.originImages:
-        imgs = []
-        color = ('b','g','r')
-        for i,col in enumerate(color):
-            histr = cv2.calcHist([img[0]],[i],None,[256],[0,256])
-            plt.plot(histr,color = col)
-            plt.xlim([0,256])
-        plt.savefig("hist1.jpg")
-        
-        result = cv2.imread("hist1.jpg")
-        imgs.extend([img[0],result])
-        imageList.append(imgs)
-    resizeFromList(window, imageList)
-    showImage(window,['原图','R直方图后'])
-
 #图像增强按钮相关方法
 #伪彩色增强
 def enhance1Image(window):
@@ -360,22 +340,6 @@ def enhance2Image(window):
 
     resizeFromList(window, imageList)
     showImage(window,['原图','真彩色增强后'])
-#直方图均衡
-def histNormalized(window):
-    imageList = []
-
-    for img in window.originImages:
-        imgs = []
-        b, g, r = cv2.split(img[0])
-        b_equal = cv2.equalizeHist(b)
-        g_equal = cv2.equalizeHist(g)
-        r_equal = cv2.equalizeHist(r)
-        result = cv2.merge([b_equal, g_equal, r_equal])
-        imgs.extend([img[0],result])
-        imageList.append(imgs)
-
-    resizeFromList(window, imageList)
-    showImage(window,['原图','直方图均衡化后'])
 
 
 #打开图像
@@ -396,7 +360,7 @@ def readIamge(window):
     window.originImages = []
     for path in window.imagePaths:
         imgs = []
-        # img = cv2.imread(path)
+        #img = cv2.imread(path)
         img = cv2.imdecode(np.fromfile(path, dtype = np.uint8), 1)
         # img = cv2.cvtColor(img,cv2.COLOR_RGB2BGR)
         imgs.append(img)
@@ -418,9 +382,9 @@ def showImage(window,headers = []):
             imageView.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
             img = window.imageList[y][x]
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             width = img.shape[1]
             height = img.shape[0]
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
             window.showImageView.setColumnWidth(x, width)
             window.showImageView.setRowHeight(y, height)
@@ -442,7 +406,7 @@ def resizeFromList(window,imageList):
         imgs = []
         for img in imageList[x_pos]:
 
-            # image = cv2.resize(img, (width, height))
+            #image = cv2.resize(img, (width, height))
             image = cv2.resize(img, (width, height), interpolation = cv2.INTER_CUBIC)
             imgs.append(image)
         window.imageList.append(imgs)
