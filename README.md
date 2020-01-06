@@ -1,5 +1,5 @@
 ## 软件界面
-![imgprocessing.png](https://github.com/AmazingEric/pyqt5-imageprocessing/界面.png)
+![Interface.png](https://github.com/AmazingEric/pyqt5-imageprocessing/blob/master/Interface.png)
 ## 运行环境
 * python 3.6+
 * opencv 3.4+
