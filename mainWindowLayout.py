@@ -12,24 +12,24 @@ class MainLayout(object):
 
     def setupUi(self,window):
         window.resize(1000, 600)
-        #窗口标题
+        # 窗口标题
         self.setWindowTitle('数字图像处理')
 
         self.centralWidget = QtWidgets.QWidget(window)      
 
-        #全局布局
+        # 全局布局
         mainLayout=QVBoxLayout(self.centralWidget)
         self.label = QLabel()
         self.show()
 
-        #顶部布局
-        #顶部固定布局
+        # 顶部布局
+        # 顶部固定布局
         topLayout=QHBoxLayout()
         solidLayout=QHBoxLayout()
         self.importImageEdit=QLineEdit()
         self.importImageEdit.setFocusPolicy(Qt.NoFocus)
         solidLayout.addWidget(self.importImageEdit)
-        #文件按钮
+        # 文件按钮
         self.importButton=QPushButton('文件')
         solidLayout.addWidget(self.importButton)
         filemenu = QMenu(self)
@@ -41,7 +41,7 @@ class MainLayout(object):
         filemenu.addAction(self.exitAct)
         self.importButton.setMenu(filemenu)
 
-        #灰度变换按钮
+        # 灰度变换按钮
         self.GrayButton=QPushButton('灰度变换')
         solidLayout.addWidget(self.GrayButton)
         graymenu = QMenu(self)
@@ -51,11 +51,11 @@ class MainLayout(object):
         graymenu.addAction(self.reverseAct)
         self.GrayButton.setMenu(graymenu)
 
-        #伽马矫正按钮
+        # 伽马矫正按钮
         self.GammaButton=QPushButton('伽马矫正')
         solidLayout.addWidget(self.GammaButton)
 
-        #滤波按钮
+        # 滤波按钮
         self.FilterButton=QPushButton('滤波')
         solidLayout.addWidget(self.FilterButton)
         filtermenu = QMenu(self)
@@ -65,19 +65,19 @@ class MainLayout(object):
         filtermenu.addAction(self.medFilter)
         self.FilterButton.setMenu(filtermenu)
 
-        #拉普拉斯锐化按钮
+        # 拉普拉斯锐化按钮
         self.LaplaceButton=QPushButton('拉普拉斯锐化')
         solidLayout.addWidget(self.LaplaceButton)
 
-        #傅里叶变换按钮
+        # 傅里叶变换按钮
         self.FourierButton=QPushButton('傅里叶变换')
         solidLayout.addWidget(self.FourierButton)
 
-        #直方图均衡化按钮
+        # 直方图均衡化按钮
         self.HistogramButton=QPushButton('直方图均衡化')
         solidLayout.addWidget(self.HistogramButton)
 
-        #频率域滤波按钮
+        # 频率域滤波按钮
         self.FrequencyButton=QPushButton('频率域滤波')
         solidLayout.addWidget(self.FrequencyButton)
         frequencymenu = QMenu(self)
@@ -87,7 +87,7 @@ class MainLayout(object):
         frequencymenu.addAction(self.ButterworthLowAct)
         self.FrequencyButton.setMenu(frequencymenu)
 
-        #图像复原按钮
+        # 图像复原按钮
         self.RestoreButton=QPushButton('图像复原')
         solidLayout.addWidget(self.RestoreButton)
         restoremenu = QMenu(self)
@@ -99,18 +99,18 @@ class MainLayout(object):
         solidLayout.addStretch(1)
         topLayout.addLayout(solidLayout)
 
-        #顶部隐藏布局
+        # 顶部隐藏布局
         self.hideLayout=QHBoxLayout()
         topLayout.addLayout(self.hideLayout)
         mainLayout.addLayout(topLayout)
 
-        #中间布局
+        # 中间布局
         midLayout=QHBoxLayout()
         self.showImageView=QTableWidget()
         midLayout.addWidget(self.showImageView)
         mainLayout.addLayout(midLayout)
 
-        #底部布局
+        # 底部布局
         bottomLayout=QHBoxLayout()
         self.preButton=QPushButton('上一张')
         bottomLayout.addWidget(self.preButton)
@@ -121,7 +121,7 @@ class MainLayout(object):
         bottomLayout.addWidget(self.exitButton)
         mainLayout.addLayout(bottomLayout)
 
-        #设置stretch
+        # 设置stretch
         mainLayout.setStretchFactor(topLayout,1)
         mainLayout.setStretchFactor(midLayout,6)
         mainLayout.setStretchFactor(bottomLayout,1)

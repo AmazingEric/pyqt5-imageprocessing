@@ -19,7 +19,7 @@ from math import sqrt, pow, exp
 class MainWindow(QMainWindow, MainLayout):
     imagePaths = []
     originImages = [] 
-    imageList = []  #二维的图像列表
+    imageList = []  # 二维的图像列表，用于存储原图像以及处理后的图像
     hideLayoutTag = -1
 
     def __init__(self,parent = None):
@@ -28,62 +28,63 @@ class MainWindow(QMainWindow, MainLayout):
         self.signalSlots()
         
 
-    #button与具体方法关联
+    # 绑定按钮与具体方法
     def signalSlots(self):
-        #文件按钮相关方法
-        #打开
+        # 文件按钮相关方法
+        # 打开
         self.openAct.triggered.connect(lambda : importImage(self))
-        #保存
+        # 保存
         self.saveAct.triggered.connect(lambda : importImage(self))
-        #退出
+        # 退出
         self.exitAct.triggered.connect(self.close)
 
-        #灰度变换按钮相关方法
-        #指数灰度变换
+        # 灰度变换按钮相关方法
+        # 指数灰度变换
         self.expAct.triggered.connect(lambda : ExpGray(self))
-        #负片
+        # 负片
         self.reverseAct.triggered.connect(lambda : ReverseGray(self))
 
-        #伽马矫正方法
+        # 伽马矫正方法
         self.GammaButton.clicked.connect(lambda : GammaChange(self))
 
-        #滤波按钮相关方法
-        #均值滤波
+        # 滤波按钮相关方法
+        # 均值滤波
         self.avgFilter.triggered.connect(lambda : AvgFilter(self))
-        #中值滤波
+        # 中值滤波
         self.medFilter.triggered.connect(lambda : MedFilter(self))
 
-        #拉普拉斯锐化方法
+        # 拉普拉斯锐化方法
         self.LaplaceButton.clicked.connect(lambda : Laplacian(self))
 
-        #傅里叶变换方法
+        # 傅里叶变换方法
         self.FourierButton.clicked.connect(lambda : FourierChange(self))
 
-        #直方图均衡化方法
+        # 直方图均衡化方法
         self.HistogramButton.clicked.connect(lambda : HistogramEqualization(self))
 
-        #频率域滤波按钮相关方法
-        #布特沃思高通滤波
+        # 频率域滤波按钮相关方法
+        # 布特沃思高通滤波
         self.ButterworthHighAct.triggered.connect(lambda : ButterworthHigh(self))
-        #布特沃思低通滤波
+        # 布特沃思低通滤波
         self.ButterworthLowAct.triggered.connect(lambda : ButterworthLow(self))
 
-        #图像复原相关方法
-        #频率域逆滤波
+        # 图像复原相关方法
+        # 频率域逆滤波
         self.InverseFilteringAct.triggered.connect(lambda : InverseFiltering(self))
-        #维纳滤波
+        # 维纳滤波
         self.WienerFilteringAct.triggered.connect(lambda : WienerFiltering(self))
 
-        #底部
-        #上一张
+        # 底部按钮
+        # 上一张
         self.preButton.clicked.connect(lambda : preImage(self))
-        #下一张
+        # 下一张
         self.nextButton.clicked.connect(lambda : nextImage(self))
-        #退出
+        # 退出
         self.exitButton.clicked.connect(self.close)
 
-#灰度变换按钮相关方法
-#指数灰度变换
+
+# 灰度变换按钮相关方法
+# 指数灰度变换
 def ExpGray(window):
     imageList = []
     for img in window.originImages:
@@ -96,17 +97,19 @@ def ExpGray(window):
         for i in range(img_height):
             for j in range(img_width):
                 for k in range(3):
+                    # 对原图像的像素进行指数处理
                     result[i][j][k] = 30.0 * np.log2(img[0][i][j][k]+1)
         imgs.extend([img[0],result])
         imageList.append(imgs)
     resizeFromList(window, imageList)
     showImage(window,['原图','指数灰度变换'])
 
-#负片
+# 负片
 def ReverseGray(window):
     imageList = []
     for img in window.originImages:
         imgs = []
+        # 对原图像进行负片处理
         result = 255-img[0]
         imgs.extend([img[0],result])
         imageList.append(imgs)
@@ -114,7 +117,7 @@ def ReverseGray(window):
     showImage(window,['原图','负片'])
 
 
-#伽马矫正按钮方法
+# 伽马矫正按钮方法
 def GammaChange(window):
     imageList = []
     for img in window.originImages:
@@ -127,6 +130,7 @@ def GammaChange(window):
         for i in range(img_height):
             for j in range(img_width):
                 for k in range(3):
+                    # 对原图像的像素进行伽马矫正
                     result[i][j][k] = 1.0 * np.power(img[0][i][j][k]/255.0, 1/0.6) * 255.0
         imgs.extend([img[0],result])
         imageList.append(imgs)
@@ -139,6 +143,7 @@ def AvgFilter(window):
     imageList = []
     for img in window.originImages:
         imgs = []
+        # 对原图像进行均值滤波
         result = cv2.blur(img[0], (5, 5))
         imgs.extend([img[0],result])
         imageList.append(imgs)
@@ -150,6 +155,7 @@ def MedFilter(window):
     imageList = []
     for img in window.originImages:
         imgs = []
+        # 对原图像进行中值滤波
         result = cv2.medianBlur(img[0],5)
         imgs.extend([img[0],result])
         imageList.append(imgs)
@@ -163,28 +169,33 @@ def Laplacian(window):
     for img in window.originImages:
         imgs = []
         img_height, img_width = img[0].shape[:2]
+        # 获得原图像的拉普拉斯算子
         laplace = cv2.Laplacian(img[0], cv2.CV_64F, ksize=3)
         laplace[laplace<0] = 0
         laplace[laplace>255] = 255
+        # 原图像减去拉普拉斯算子，得到锐化后的图像
         result = img[0] - laplace
         result[result<0] = 0
         result[result>255] = 255
-        result = cv2.resize(src=result, dsize=(img_height, img_width))
+        result = cv2.resize(src=result, dsize=(img_height, img_width)).astype('uint8')
         imgs.extend([img[0],result])
         imageList.append(imgs)
     resizeFromList(window, imageList)
     showImage(window,['原图','拉普拉斯锐化'])
 
 
-#傅里叶变换按钮方法
+# 傅里叶变换按钮方法
 def FourierChange(window):
     imageList = []
     for img in window.originImages:
         imgs = []
+        # 提取图像的三个通道
         b,g,r = cv2.split(img[0])
+        # 对每个通道单独进行傅里叶变换
         b_freImg,b_recImg = oneChannelDft(b)
         g_freImg, g_recImg = oneChannelDft(g)
         r_freImg, r_recImg = oneChannelDft(r)
+        # 将处理后的通道合并成一个图像
         freImg = cv2.merge([b_freImg,g_freImg,r_freImg])
         imgs.extend([img[0],freImg])
         imageList.append(imgs)
@@ -208,7 +219,7 @@ def oneChannelDft(img):
     recoveredImg = ilmg.astype('uint8')
     return frequencyImg,recoveredImg
 
-#直方图均衡化按钮方法
+# 直方图均衡化按钮方法
 def HistogramEqualization(window):
     imageList = []
     for img in window.originImages:
@@ -223,31 +234,37 @@ def HistogramEqualization(window):
     resizeFromList(window, imageList)
     showImage(window,['原图','直方图均衡化'])
 
-#频率域滤波按钮相关方法
-#布特沃斯高通滤波
+# 频率域滤波按钮相关方法
+# 布特沃斯高通滤波
 def ButterworthHigh(window):
     imageList = []
     for img in window.originImages:
         imgs = []
+        # 提取图像的三个通道
         B, G, R = cv2.split(img[0])
+        # 对每个通道单独进行布特沃斯高通滤波，D0取20
         B = OneChannelButterworth(B, 1, 20)
         G = OneChannelButterworth(G, 1, 20)
         R = OneChannelButterworth(R, 1, 20)
+        # 将处理后的通道合并成一个图像
         result = cv2.merge([B, G, R])
         imgs.extend([img[0],result])
         imageList.append(imgs)
     resizeFromList(window, imageList)
     showImage(window,['原图','布特沃斯高通滤波'])
 
-#布特沃斯低通滤波
+# 布特沃斯低通滤波
 def ButterworthLow(window):
     imageList = []
     for img in window.originImages:
         imgs = []
+        # 提取图像的三个通道
         B, G, R = cv2.split(img[0])
+        # 对每个通道单独进行布特沃斯低通滤波，D0取80
         B = OneChannelButterworth(B, 0, 80)
         G = OneChannelButterworth(G, 0, 80)
         R = OneChannelButterworth(R, 0, 80)
+        # 将处理后的通道合并成一个图像
         result = cv2.merge([B, G, R])
         imgs.extend([img[0],result])
         imageList.append(imgs)
@@ -275,16 +292,19 @@ def OneChannelButterworth(image, method, D0):
     return result.astype('uint8')
 
 
-#图像复原按钮相关方法
-#频率域逆滤波
+# 图像复原按钮相关方法
+# 频率逆滤波
 def InverseFiltering(window):
     imageList = []
     for img in window.originImages:
         imgs = []
+        # 提取图像的三个通道
         B, G, R = cv2.split(img[0])
+        # 对每个通道单独进行频率逆滤波
         B = OneChannelIF(B)
         G = OneChannelIF(G)
         R = OneChannelIF(R)
+        # 将处理后的通道合并成一个图像
         result = cv2.merge([B, G, R])
         imgs.extend([img[0],result])
         imageList.append(imgs)
@@ -293,11 +313,13 @@ def InverseFiltering(window):
 def OneChannelIF(image):
     img_height, img_width = image.shape[:2]
     result = np.zeros_like(image, dtype=complex)
+    # 先对原图像进行傅里叶变换并移至中心
     dft_img = np.fft.fft2(image)
     dft_img = np.fft.fftshift(dft_img)
     for i in range(img_height):
         for j in range(img_width):
             result[i][j] = dft_img[i][j] / H(i,j)
+    # 对图像进行逆傅里叶变换
     idft_img = np.fft.ifftshift(result)
     idft_img = np.fft.ifft2(idft_img)
     result = np.abs(np.real(idft_img))
@@ -309,10 +331,13 @@ def WienerFiltering(window):
     imageList = []
     for img in window.originImages:
         imgs = []
+        # 提取图像的三个通道
         B, G, R = cv2.split(img[0])
+        # 对每个通道单独进行维纳滤波
         B = OneChannelWF(B)
         G = OneChannelWF(G)
         R = OneChannelWF(R)
+        # 将处理后的通道合并成一个图像
         result = cv2.merge([B, G, R])
         imgs.extend([img[0],result])
         imageList.append(imgs)
@@ -322,11 +347,13 @@ def OneChannelWF(image):
     K = 0.0001
     img_height, img_width = image.shape[:2]
     result = np.zeros_like(image, dtype=complex)
+    # 先对原图像进行傅里叶变换并移至中心
     dft_img = np.fft.fft2(image)
     dft_img = np.fft.fftshift(dft_img)
     for i in range(img_height):
         for j in range(img_width):
             result[i][j] = (H(i,j)/(pow(H(i,j),2)+K))*dft_img[i][j]
+    # 对图像进行逆傅里叶变换
     idft_img = np.fft.ifftshift(result)
     idft_img = np.fft.ifft2(idft_img)
     result = np.abs(np.real(idft_img))
@@ -356,9 +383,7 @@ def readIamge(window):
     window.originImages = []
     for path in window.imagePaths:
         imgs = []
-        #img = cv2.imread(path)
         img = cv2.imdecode(np.fromfile(path, dtype = np.uint8), 1)
-        # img = cv2.cvtColor(img,cv2.COLOR_RGB2BGR)
         imgs.append(img)
         window.originImages.append(imgs)
 
@@ -386,7 +411,7 @@ def showImage(window,headers = []):
             window.showImageView.setRowHeight(y, height)
 
             frame = QImage(img, width, height, QImage.Format_RGB888)
-            #调用QPixmap命令，建立一个图像存放框
+            # 调用QPixmap命令，建立一个图像存放框
             pix = QPixmap.fromImage(frame)
             item = QGraphicsPixmapItem(pix) 
             scene = QGraphicsScene()  # 创建场景
@@ -401,12 +426,9 @@ def resizeFromList(window,imageList):
     for x_pos in range(len(imageList)):
         imgs = []
         for img in imageList[x_pos]:
-
-            #image = cv2.resize(img, (width, height))
             image = cv2.resize(img, (width, height), interpolation = cv2.INTER_CUBIC)
             imgs.append(image)
         window.imageList.append(imgs)
-        print(len(window.imageList),len(window.imageList[0]))
 
 if __name__ == '__main__':
 
