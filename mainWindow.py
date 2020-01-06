@@ -14,6 +14,7 @@ import cv2
 import numpy as np
 from scipy import ndimage
 from matplotlib import pyplot as plt
+from math import sqrt, pow
 
 class MainWindow(QMainWindow, MainLayout):
     imagePaths = []
@@ -225,15 +226,53 @@ def HistogramEqualization(window):
 #频率域滤波按钮相关方法
 #布特沃斯高通滤波
 def ButterworthHigh(window):
-    window.imageList = []
-    window.imageList.append(imgs)
+    imageList = []
+    for img in window.originImages:
+        imgs = []
+        B, G, R = cv2.split(img[0])
+        B = OneChannelButterworth(B, 1, 20)
+        G = OneChannelButterworth(G, 1, 20)
+        R = OneChannelButterworth(R, 1, 20)
+        result = cv2.merge([B, G, R])
+        imgs.extend([img[0],result])
+        imageList.append(imgs)
+    resizeFromList(window, imageList)
     showImage(window,['原图','布特沃斯高通滤波'])
 
 #布特沃斯低通滤波
 def ButterworthLow(window):
-    window.imageList = []
-    window.imageList.append(imgs)
+    imageList = []
+    for img in window.originImages:
+        imgs = []
+        B, G, R = cv2.split(img[0])
+        B = OneChannelButterworth(B, 0, 80)
+        G = OneChannelButterworth(G, 0, 80)
+        R = OneChannelButterworth(R, 0, 80)
+        result = cv2.merge([B, G, R])
+        imgs.extend([img[0],result])
+        imageList.append(imgs)
+    resizeFromList(window, imageList)
     showImage(window,['原图','布特沃斯低通滤波'])
+
+def OneChannelButterworth(image, method, D0):
+    n = 2
+    img_height, img_width = image.shape[:2]
+    dft_img = np.fft.fft2(image)
+    dft_img = np.fft.fftshift(dft_img)
+    H = np.zeros_like(dft_img)
+    for i in range(img_height):
+        for j in range(img_width):
+            D = sqrt((pow(i-img_height/2, 2)+pow(j-img_width/2, 2)))
+            H[i][j] = 1./(1+pow(D/D0, 2*n))
+    if method:
+        result = dft_img*(1-H)
+    else:
+        result = dft_img*H
+    idft_img = np.fft.ifftshift(result)
+    idft_img = np.fft.ifft2(idft_img)
+    result = np.abs(np.real(idft_img))
+    result = np.clip(result,0,255)
+    return result.astype('uint8')
 
 
 #图像复原按钮相关方法
