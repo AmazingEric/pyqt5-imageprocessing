@@ -14,7 +14,7 @@ import cv2
 import numpy as np
 from scipy import ndimage
 from matplotlib import pyplot as plt
-from math import sqrt, pow
+from math import sqrt, pow, exp
 
 class MainWindow(QMainWindow, MainLayout):
     imagePaths = []
@@ -278,15 +278,64 @@ def OneChannelButterworth(image, method, D0):
 #图像复原按钮相关方法
 #频率域逆滤波
 def InverseFiltering(window):
-    window.imageList = []
-    window.imageList.append(imgs)
+    imageList = []
+    for img in window.originImages:
+        imgs = []
+        B, G, R = cv2.split(img[0])
+        B = OneChannelIF(B)
+        G = OneChannelIF(G)
+        R = OneChannelIF(R)
+        result = cv2.merge([B, G, R])
+        imgs.extend([img[0],result])
+        imageList.append(imgs)
+    resizeFromList(window, imageList)
     showImage(window,['原图','频率域逆滤波图像复原'])
+def OneChannelIF(image):
+    img_height, img_width = image.shape[:2]
+    result = np.zeros_like(image, dtype=complex)
+    dft_img = np.fft.fft2(image)
+    dft_img = np.fft.fftshift(dft_img)
+    for i in range(img_height):
+        for j in range(img_width):
+            result[i][j] = dft_img[i][j] / H(i,j)
+    idft_img = np.fft.ifftshift(result)
+    idft_img = np.fft.ifft2(idft_img)
+    result = np.abs(np.real(idft_img))
+    result = np.clip(result,0,255)
+    return result.astype('uint8')
 
 #维纳滤波
 def WienerFiltering(window):
-    window.imageList = []
-    window.imageList.append(imgs)
+    imageList = []
+    for img in window.originImages:
+        imgs = []
+        B, G, R = cv2.split(img[0])
+        B = OneChannelWF(B)
+        G = OneChannelWF(G)
+        R = OneChannelWF(R)
+        result = cv2.merge([B, G, R])
+        imgs.extend([img[0],result])
+        imageList.append(imgs)
+    resizeFromList(window, imageList)
     showImage(window,['原图','维纳滤波图像复原'])
+def OneChannelWF(image):
+    K = 0.0001
+    img_height, img_width = image.shape[:2]
+    result = np.zeros_like(image, dtype=complex)
+    dft_img = np.fft.fft2(image)
+    dft_img = np.fft.fftshift(dft_img)
+    for i in range(img_height):
+        for j in range(img_width):
+            result[i][j] = (H(i,j)/(pow(H(i,j),2)+K))*dft_img[i][j]
+    idft_img = np.fft.ifftshift(result)
+    idft_img = np.fft.ifft2(idft_img)
+    result = np.abs(np.real(idft_img))
+    result = np.clip(result,0,255)
+    return result.astype('uint8')
+
+def H(u, v):
+    k = 0.00001
+    return exp(-1*k*pow(pow(u,2)+pow(v,2), 5/6))
 
 
 #打开图像
