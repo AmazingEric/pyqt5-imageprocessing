@@ -85,10 +85,6 @@ class MainLayout(object):
         frequencymenu.addAction(self.ButterworthHighAct)
         self.ButterworthLowAct = QAction('布特沃思低通滤波',self)
         frequencymenu.addAction(self.ButterworthLowAct)
-        self.GaussHighAct = QAction('高斯高通滤波',self)
-        frequencymenu.addAction(self.GaussHighAct)
-        self.GaussLowAct = QAction('高斯低通滤波',self)
-        frequencymenu.addAction(self.GaussLowAct)
         self.FrequencyButton.setMenu(frequencymenu)
 
         #图像复原按钮

@@ -66,10 +66,6 @@ class MainWindow(QMainWindow, MainLayout):
         self.ButterworthHighAct.triggered.connect(lambda : ButterworthHigh(self))
         #布特沃思低通滤波
         self.ButterworthLowAct.triggered.connect(lambda : ButterworthLow(self))
-        #高斯高通滤波
-        self.GaussHighAct.triggered.connect(lambda : GaussHigh(self))
-        #高斯低通滤波
-        self.GaussLowAct.triggered.connect(lambda : GaussLow(self))
 
         #图像复原相关方法
         #频率域逆滤波
@@ -173,7 +169,6 @@ def Laplacian(window):
         result[result<0] = 0
         result[result>255] = 255
         result = cv2.resize(src=result, dsize=(img_height, img_width))
-        print(result)
         imgs.extend([img[0],result])
         imageList.append(imgs)
     resizeFromList(window, imageList)
@@ -240,17 +235,6 @@ def ButterworthLow(window):
     window.imageList.append(imgs)
     showImage(window,['原图','布特沃斯低通滤波'])
 
-#高斯高通滤波
-def GaussHigh(window):
-    window.imageList = []
-    window.imageList.append(imgs)
-    showImage(window,['原图','高斯高通滤波'])
-
-#高斯低通滤波
-def GaussLow(window):
-    window.imageList = []
-    window.imageList.append(imgs)
-    showImage(window,['原图','高斯低通滤波'])
 
 #图像复原按钮相关方法
 #频率域逆滤波
