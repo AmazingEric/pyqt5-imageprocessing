@@ -27,15 +27,6 @@ class MainWindow(QMainWindow, MainLayout):
         self.setupUi(self)
         self.signalSlots()
         setHideButton(self)
-        
-    def keyPressEvent(self, event):
-        #使用键盘输入左右键来实现图像切换
-        if (event.key() == Qt.Key_Left or event.key()==Qt.Key_Up):
-            preImage(self)
-            print('上一张')
-        if (event.key() == Qt.Key_Right or event.key()==Qt.Key_Down):
-            nextImage(self)
-            print('下一张')
 
     # 绑定按钮与具体方法
     def signalSlots(self):
