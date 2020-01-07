@@ -1,19 +1,19 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import sys
-import os
+from sys import argv, exit
+from os import walk
+
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 from mainWindowLayout import MainLayout
 
 import cv2
 import numpy as np
-from scipy import ndimage
-from matplotlib import pyplot as plt
 from math import sqrt, pow, exp
 
 class MainWindow(QMainWindow, MainLayout):
@@ -469,7 +469,7 @@ def preImage(window):
     dirname,filename=getDirFromFname(fname)
     imageList=[]
     picTypes=['.jpg','.bmp','.png','.jpeg','.rgb','.tif']
-    root, dirs, files = os.walk(dirname).__next__()
+    root, dirs, files = walk(dirname).__next__()
     for file in files:
         if(file[-4:] in picTypes or file[-5:] in picTypes):
             imageList.append(file)
@@ -497,7 +497,7 @@ def nextImage(window):
     dirname,filename=getDirFromFname(fname)
     imageList=[]
     picTypes=['.jpg','.bmp','.png','.jpeg','.rgb','.tif']
-    root, dirs, files = os.walk(dirname).__next__()
+    root, dirs, files = walk(dirname).__next__()
     for file in files:
         if(file[-4:] in picTypes or file[-5:] in picTypes):
             imageList.append(file)
@@ -521,7 +521,7 @@ def nextImage(window):
 
 if __name__ == '__main__':
 
-    app = QApplication(sys.argv)
+    app = QApplication(argv)
     mw = MainWindow()
     mw.show()
-    sys.exit(app.exec_())
+    exit(app.exec_())
