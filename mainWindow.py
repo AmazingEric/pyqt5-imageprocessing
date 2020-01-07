@@ -26,6 +26,7 @@ class MainWindow(QMainWindow, MainLayout):
         super(MainWindow, self).__init__(parent)
         self.setupUi(self)
         self.signalSlots()
+        setHideButton(self)
         
 
     # 绑定按钮与具体方法
@@ -364,7 +365,6 @@ def H(u, v):
     k = 0.00001
     return exp(-1*k*pow(pow(u,2)+pow(v,2), 5/6))
 
-
 #打开图像
 def importImage(window):
     fname, _ = QFileDialog.getOpenFileName(window, 'Open file', '.', 'Image Files(*.jpg *.bmp *.png *.jpeg *.rgb *.tif)')
@@ -378,6 +378,7 @@ def importImage(window):
         readIamge(window)
         resizeFromList(window, window.originImages)
         showImage(window)
+        showButton(window)
 
 def readIamge(window):
     window.originImages = []
@@ -429,6 +430,95 @@ def resizeFromList(window,imageList):
             image = cv2.resize(img, (width, height), interpolation = cv2.INTER_CUBIC)
             imgs.append(image)
         window.imageList.append(imgs)
+
+# 设置按钮不可见
+def setHideButton(window):
+    window.GrayButton.hide()
+    window.GammaButton.hide()
+    window.FilterButton.hide()
+    window.LaplaceButton.hide()
+    window.FourierButton.hide()
+    window.HistogramButton.hide()
+    window.FrequencyButton.hide()
+    window.RestoreButton.hide()
+    window.preButton.setEnabled(False)
+    window.nextButton.setEnabled(False)
+
+# 设置按钮可见
+def showButton(window):
+    window.GrayButton.setVisible(True)
+    window.GammaButton.setVisible(True)
+    window.FilterButton.setVisible(True)
+    window.LaplaceButton.setVisible(True)
+    window.FourierButton.setVisible(True)
+    window.HistogramButton.setVisible(True)
+    window.FrequencyButton.setVisible(True)
+    window.RestoreButton.setVisible(True)
+    window.preButton.setEnabled(True)
+    window.nextButton.setEnabled(True)
+
+# 获取所得文件的目录
+def getDirFromFname(fname):
+    pathList=fname.split('/')
+    filename=pathList.pop()
+    dirname='/'.join(pathList)
+    return dirname,filename
+
+# 上一页按钮事件
+def preImage(window):
+    fname=window.imagePaths[0]
+    dirname,filename=getDirFromFname(fname)
+    imageList=[]
+    picTypes=['.jpg','.bmp','.png','.jpeg','.rgb','.tif']
+    root, dirs, files = os.walk(dirname).__next__()
+    for file in files:
+        if(file[-4:] in picTypes or file[-5:] in picTypes):
+            imageList.append(file)
+    index=imageList.index(filename)
+    if index==0:
+        window.preButton.setEnabled(False)
+        QMessageBox.information(window, "错误提示",  "这已经是第一张图片", QMessageBox.Ok)
+    else: 
+        window.nextButton.setEnabled(True)
+        index=index-1
+    fname=root+'/'+imageList[index]
+    window.importImageEdit.setText(fname)
+    window.imagePaths = []
+    window.originImages = []
+    window.imageList = []
+    window.imagePaths.append(fname)
+    if window.imagePaths != []:
+        readIamge(window)
+        resizeFromList(window, window.originImages)
+        showImage(window)
+
+# 下一页按钮事件
+def nextImage(window):
+    fname=window.imagePaths[0]
+    dirname,filename=getDirFromFname(fname)
+    imageList=[]
+    picTypes=['.jpg','.bmp','.png','.jpeg','.rgb','.tif']
+    root, dirs, files = os.walk(dirname).__next__()
+    for file in files:
+        if(file[-4:] in picTypes or file[-5:] in picTypes):
+            imageList.append(file)
+    index=imageList.index(filename)
+    if index==len(imageList)-1:
+        window.nextButton.setEnabled(False)
+        QMessageBox.information(window, "错误提示",  "这已经是最后一张图片", QMessageBox.Ok)
+    else: 
+        window.preButton.setEnabled(True)
+        index=index+1
+    fname=root+'/'+imageList[index]
+    window.importImageEdit.setText(fname)
+    window.imagePaths = []
+    window.originImages = []
+    window.imageList = []
+    window.imagePaths.append(fname)
+    if window.imagePaths != []:
+        readIamge(window)
+        resizeFromList(window, window.originImages)
+        showImage(window)
 
 if __name__ == '__main__':
 
