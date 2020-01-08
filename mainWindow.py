@@ -98,7 +98,7 @@ def ExpGray(window):
             for j in range(img_width):
                 for k in range(3):
                     # 对原图像的像素进行指数处理
-                    result[i][j][k] = 30.0 * np.log2(img[0][i][j][k]+1)
+                    result[i][j][k] = 7.0 * pow(img[0][i][j][k], 0.6)
         imgs.extend([img[0],result])
         imageList.append(imgs)
     resizeFromList(window, imageList)
