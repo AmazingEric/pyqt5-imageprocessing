@@ -35,8 +35,6 @@ class MainLayout(object):
         filemenu = QMenu(self)
         self.openAct = QAction('打开',self)
         filemenu.addAction(self.openAct)
-        self.saveAct = QAction('保存',self)
-        filemenu.addAction(self.saveAct)
         self.exitAct = QAction('退出',self)
         filemenu.addAction(self.exitAct)
         self.importButton.setMenu(filemenu)
