@@ -33,8 +33,6 @@ class MainWindow(QMainWindow, MainLayout):
         # 文件按钮相关方法
         # 打开
         self.openAct.triggered.connect(lambda : importImage(self))
-        # 保存
-        self.saveAct.triggered.connect(lambda : importImage(self))
         # 退出
         self.exitAct.triggered.connect(self.close)
 
